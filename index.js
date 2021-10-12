@@ -1,4 +1,5 @@
 require('dotenv').config();
+global.AbortController = require("abort-controller");
 const { default: axios } = require('axios');
 const Discord = require('discord.js');
 const fs = require('fs');
@@ -34,7 +35,7 @@ client.once('ready', ()=>{
     console.log('ready')
 })
 
-client.on('message', message => {
+client.on('messageCreate', message => {
 
     if(!message.content.startsWith(prefix) || message.author.bot) return;
 

@@ -193,8 +193,8 @@ module.exports = {
                     console.log(e);
                 }
             }
-            else
-                message.channel.send("`No more songs left on the Queue`");
+            // else
+            //     message.channel.send("`No more songs left on the Queue`");
         });
     }
 }
