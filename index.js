@@ -41,18 +41,29 @@ client.on('messageCreate', message => {
 
     const args = message.content.slice(prefix.length).split(/ +/);
     const comm = args.shift().toLowerCase();
+    const next = args[args.length - 1] === '-n';
+    console.log(next);
 
     if(comm === 'play' || comm === 'p'){
-        client.commands.get('play').execute(message, args, client.queues, client.spotifyToken);
+        client.commands.get('play').execute(message, args, client.queues, client.spotifyToken, next);
+    }
+    if(comm === 'pause'){
+        client.commands.get('pause').execute(message, args, client.queues);
+    }
+    if(comm === 'unpause'){
+        client.commands.get('unpause').execute(message, args, client.queues);
     }
     if(comm === 'reset'){
         client.commands.get('reset').execute(message, args, client.queues);
     }
     if(comm === 'n' || comm === 'next'){
-        client.commands.get('next').execute(message, args, client.queues);
+        client.commands.get('next').execute(message, client.queues);
     }
     if(comm === 'queue' || comm === 'q'){
         client.commands.get('queue').execute(message, args, client.queues);
+    }
+    if(comm === 'remove' || comm === 'r'){
+        client.commands.get('remove').execute(message, args, client.queues);
     }
 })
 

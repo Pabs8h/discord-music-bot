@@ -7,16 +7,17 @@ const axios = require('axios').default;
 module.exports = {
     name: 'play',
     description: 'joins channel to play music',
-    async execute(message, args, queues, spoToken) {
+    async execute(message, args, queues, spoToken, next) {
 
         const voiceChan = message.member.voice.channel;
-        const serverId = voiceChan.guildId;
         
         if(!voiceChan) return message.channel.send("You need to be in a voice channel to execute this command");
         const permissions = voiceChan.permissionsFor(message.client.user);
         if(!permissions.has('CONNECT')) return message.channel.send('You dont have the correct permissions');
         if(!permissions.has('SPEAK')) return message.channel.send('You dont have the correct permissions');
         if(!args.length) return message.channel.send('You need to specify a song');
+        
+        const serverId = voiceChan.guildId;
 
         let serverQueue = queues.get(serverId);
         let isIdle = false;
@@ -146,10 +147,18 @@ module.exports = {
 
         const addToQueue = (video) => {
             if(video){
-                serverQueue.queue.push({
-                    name: video.title,
-                    resource: video,
-                });
+                if(next){
+                    serverQueue.queue.splice(serverQueue.position + 1, 0, {
+                        name: video.title,
+                        resource: video,
+                    });
+                }
+                else{
+                    serverQueue.queue.push({
+                        name: video.title,
+                        resource: video,
+                    });
+                }
                 if(!isIdle)
                     message.channel.send("`" + video.title + " was added to the queue`")
                 
@@ -157,6 +166,7 @@ module.exports = {
             }
             return false;
         }
+
 
         let video;
 
@@ -184,7 +194,6 @@ module.exports = {
                 try{
                 const stream = ytdl(nextSong.resource.url, {filter: 'audioonly', highWaterMark: 1 << 25});
                 let resourceNext = createAudioResource(stream, {inlineVolume: true});
-                // console.log(resourceNext);
                 resourceNext.volume.setVolume(0.2)
                 player.play(resourceNext);
                 message.channel.send("`Now Playing ------ "+ nextSong.name + "`");
@@ -193,8 +202,8 @@ module.exports = {
                     console.log(e);
                 }
             }
-            // else
-            //     message.channel.send("`No more songs left on the Queue`");
+            else
+                message.channel.send("`No more songs left on the Queue`");
         });
     }
 }
