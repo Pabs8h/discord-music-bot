@@ -42,7 +42,6 @@ client.on('messageCreate', message => {
     const args = message.content.slice(prefix.length).split(/ +/);
     const comm = args.shift().toLowerCase();
     const next = args[args.length - 1] === '-n';
-    console.log(next);
 
     if(comm === 'play' || comm === 'p'){
         client.commands.get('play').execute(message, args, client.queues, client.spotifyToken, next);
@@ -64,6 +63,9 @@ client.on('messageCreate', message => {
     }
     if(comm === 'remove' || comm === 'r'){
         client.commands.get('remove').execute(message, args, client.queues);
+    }
+    if(comm === 'help'){
+        client.commands.get('help').execute(message);
     }
 })
 

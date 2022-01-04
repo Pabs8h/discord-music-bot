@@ -1,16 +1,18 @@
+const { createEmbed } = require("./embedMsg");
+
 module.exports = {
     name: 'queue',
-    description: 'show queue',
+    description: 'shows the queue for the server \n command: -q or -queue',
     execute(message, args, queues){
         const voiceChan = message.member.voice.channel;
         const serverId = voiceChan.guildId;
-        if(!voiceChan) return message.channel.send('`You can not execute this command outside the voice channel`');
+        if(!voiceChan) return message.channel.send('You can not execute this command outside the voice channel');
         
         let queue = queues.get(serverId);
 
-        if(!queue) return message.channel.send('`there is no queue for this server`');
+        if(!queue) return message.channel.send('there is no queue for this server');
 
-        let queueString = "`";
+        let queueString = "";
 
         let pos = queue.position;
         let max = pos + 10;
@@ -30,8 +32,9 @@ module.exports = {
             queueString += "and " + (queue.queue.length-max + 1) + " more"
         }
 
-        queueString += '`'
+        queueString += "\n"
 
-        return message.channel.send(queueString);
+        let msg = createEmbed("Queue", null, queueString, null);
+        return message.channel.send({embeds: [msg]});
     }
 }

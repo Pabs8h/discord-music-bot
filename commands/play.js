@@ -2,16 +2,17 @@ const ytdl = require('ytdl-core');
 const ytSearch = require('yt-search');
 const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus } = require('@discordjs/voice');
 const axios = require('axios').default;
+const { createEmbed } = require('./embedMsg');
 
 
 module.exports = {
     name: 'play',
-    description: 'joins channel to play music',
+    description: 'joins channel to play music, adds a song to the end of the queue or after the current song \n command: -p or -play followed by url or song name',
     async execute(message, args, queues, spoToken, next) {
 
         const voiceChan = message.member.voice.channel;
         
-        if(!voiceChan) return message.channel.send("You need to be in a voice channel to execute this command");
+        if(!voiceChan) return message.channel.send('You need to be in a voice channel to execute this command');
         const permissions = voiceChan.permissionsFor(message.client.user);
         if(!permissions.has('CONNECT')) return message.channel.send('You dont have the correct permissions');
         if(!permissions.has('SPEAK')) return message.channel.send('You dont have the correct permissions');
@@ -55,7 +56,17 @@ module.exports = {
             }
         }
 
+        const playSong = (song) => {
+            const stream = ytdl(song.url, {filter: 'audioonly', highWaterMark: 1 << 25});
+            let resourceToPlay = createAudioResource(stream, {inlineVolume: true});
+            resourceToPlay.volume.setVolume(0.2);
+            player.play(resourceToPlay);
+            let msg = createEmbed(song.title, song.thumbnail, "Now Playing", {length: song.timestamp, position: serverQueue.position})
+            message.channel.send({embeds: [msg]});
+        }
+
         const playQueue = (audioObj) => {
+            console.log(audioObj);
             if(isIdle){
                 let song;
                 if(audioObj.song)
@@ -63,11 +74,7 @@ module.exports = {
                 else if(audioObj.list)
                     song = audioObj.list[0].resource;
 
-                const stream = ytdl(song.url, {filter: 'audioonly', highWaterMark: 1 << 25});
-                let resourceNext = createAudioResource(stream, {inlineVolume: true});
-                resourceNext.volume.setVolume(0.2)
-                serverQueue.player.play(resourceNext);
-                message.channel.send("`Now Playing ------ "+ song.title + "`");
+                playSong(song);
             }
         }
 
@@ -109,7 +116,6 @@ module.exports = {
                         play = true;
                         playQueue({song: video});
                     }
-                    // console.log(element);
                 });
             }
             catch(e){
@@ -133,7 +139,6 @@ module.exports = {
         }
 
         const getNextSong = () => {
-            // let serverQueue = queues.get(serverId);
             serverQueue.position += 1;
             if(serverQueue.position >= serverQueue.queue.length)
                 return null
@@ -146,9 +151,10 @@ module.exports = {
         }
 
         const addToQueue = (video) => {
+            let nextPosition = next?serverQueue.position + 1:serverQueue.queue.length;
             if(video){
                 if(next){
-                    serverQueue.queue.splice(serverQueue.position + 1, 0, {
+                    serverQueue.queue.splice(nextPosition, 0, {
                         name: video.title,
                         resource: video,
                     });
@@ -160,7 +166,10 @@ module.exports = {
                     });
                 }
                 if(!isIdle)
-                    message.channel.send("`" + video.title + " was added to the queue`")
+                {
+                    let msg = createEmbed("Added to the queue", video.thumbnail, video.title, {length: video.timestamp, position: nextPosition})
+                    message.channel.send({embeds: [msg]})
+                }
                 
                 return true;
             }
@@ -174,7 +183,22 @@ module.exports = {
             if(args[0].startsWith("https://open.spotify.com/"))
                 spotifyUrl(args[0]);
             else{
-                video = {title: args[0], url: args[0]}
+                let info = await ytdl.getInfo(args[0]);
+                let len = parseInt(info.videoDetails.lengthSeconds);
+                let timeString = "";
+                let leadingC = "";
+                let hours = len/3600 >= 1?Math.floor(len/3600):0;
+                if(hours == 0)
+                    timeString += "";
+                else{
+                    timeString += hours+":"
+                    leadingC = "0";
+                }
+                let min = (len-(3600*hours))/60 >=1?Math.floor((len-(3600*hours))/60):0;
+                timeString += (min < 10?leadingC+min:min) + ":";
+                let seconds = (len-(min*60)-(3600*hours));
+                timeString += seconds >= 10?seconds.toString():"0"+ seconds.toString();
+                video = {title: info.videoDetails.title, url: args[0], thumbnail: info.videoDetails.thumbnails[0].url, timestamp: timeString}
                 addToQueue(video);
                 playQueue({song:video});
             }
@@ -192,11 +216,7 @@ module.exports = {
             let nextSong = getNextSong();
             if(nextSong !== null){
                 try{
-                const stream = ytdl(nextSong.resource.url, {filter: 'audioonly', highWaterMark: 1 << 25});
-                let resourceNext = createAudioResource(stream, {inlineVolume: true});
-                resourceNext.volume.setVolume(0.2)
-                player.play(resourceNext);
-                message.channel.send("`Now Playing ------ "+ nextSong.name + "`");
+                    playSong(nextSong.resource);
                 }
                 catch(e){
                     console.log(e);
@@ -205,5 +225,6 @@ module.exports = {
             else
                 message.channel.send("`No more songs left on the Queue`");
         });
+
     }
 }
