@@ -2,7 +2,7 @@ const ytdl = require('ytdl-core');
 const ytSearch = require('yt-search');
 const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus } = require('@discordjs/voice');
 const axios = require('axios').default;
-const { createEmbed } = require('./embedMsg');
+const { createEmbed } = require('./utilities/embedMsg');
 
 
 module.exports = {
@@ -14,8 +14,10 @@ module.exports = {
         
         if(!voiceChan) return message.channel.send('You need to be in a voice channel to execute this command');
         const permissions = voiceChan.permissionsFor(message.client.user);
+
         if(!permissions.has('CONNECT')) return message.channel.send('You dont have the correct permissions');
         if(!permissions.has('SPEAK')) return message.channel.send('You dont have the correct permissions');
+
         if(!args.length) return message.channel.send('You need to specify a song');
         
         const serverId = voiceChan.guildId;
@@ -23,6 +25,7 @@ module.exports = {
         let serverQueue = queues.get(serverId);
         let isIdle = false;
         let player;
+        let firstComm = false;
 
         const connection = joinVoiceChannel({
             channelId: voiceChan.id,
@@ -31,7 +34,9 @@ module.exports = {
         });
 
         if(serverQueue){
-            if(serverQueue.position >= serverQueue.queue.length)
+            if(serverQueue.player.state.status === AudioPlayerStatus.Playing)
+                isIdle = false;
+            else if((serverQueue.position >= serverQueue.queue.length) || serverQueue.queue.length === 0)
                 isIdle = true;
             player = serverQueue.player;
         }
@@ -42,6 +47,7 @@ module.exports = {
                 position: 0,
                 queue: [],
             });
+            firstComm = true;
             connection.subscribe(player);
             serverQueue = queues.get(serverId);
             isIdle = true;
@@ -61,12 +67,11 @@ module.exports = {
             let resourceToPlay = createAudioResource(stream, {inlineVolume: true});
             resourceToPlay.volume.setVolume(0.2);
             player.play(resourceToPlay);
-            let msg = createEmbed(song.title, song.thumbnail, "Now Playing", {length: song.timestamp, position: serverQueue.position})
-            message.channel.send({embeds: [msg]});
+            let msg = createEmbed(song.title, song.thumbnail, "Now Playing", {length: song.timestamp, position: serverQueue.position}, song.url)
+            return message.channel.send({embeds: [msg]});
         }
 
         const playQueue = (audioObj) => {
-            console.log(audioObj);
             if(isIdle){
                 let song;
                 if(audioObj.song)
@@ -167,7 +172,7 @@ module.exports = {
                 }
                 if(!isIdle)
                 {
-                    let msg = createEmbed("Added to the queue", video.thumbnail, video.title, {length: video.timestamp, position: nextPosition})
+                    let msg = createEmbed("Added to the queue", video.thumbnail, video.title, {length: video.timestamp, position: nextPosition}, video.url)
                     message.channel.send({embeds: [msg]})
                 }
                 
@@ -212,19 +217,21 @@ module.exports = {
                 message.channel.send("`No results found`");
         }
 
-        player.on(AudioPlayerStatus.Idle, () => {
-            let nextSong = getNextSong();
-            if(nextSong !== null){
-                try{
-                    playSong(nextSong.resource);
+        if(firstComm){
+            player.on(AudioPlayerStatus.Idle, () => {
+                let nextSong = getNextSong();
+                if(nextSong !== null){
+                    try{
+                        playSong(nextSong.resource);
+                    }
+                    catch(e){
+                        console.log(e);
+                    }
                 }
-                catch(e){
-                    console.log(e);
-                }
-            }
-            else
-                message.channel.send("`No more songs left on the Queue`");
-        });
+                else
+                    message.channel.send("`No more songs left on the Queue`");
+            });
+        }
 
     }
 }

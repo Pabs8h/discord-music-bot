@@ -1,4 +1,4 @@
-const { createEmbed } = require("./embedMsg")
+const { createEmbed } = require("./utilities/embedMsg")
 const pause = require("./pause")
 const play = require("./play")
 const queue = require("./queue")
@@ -20,7 +20,7 @@ module.exports={
             reset: reset.descrption,
             skip: skip.description
         }
-        let msg = createEmbed("Available Commands", null, "Here are all the commands avaiable and their description", null, comms)
+        let msg = createEmbed("Available Commands", null, "Here are all the commands avaiable and their description", null, null, comms)
         return message.channel.send({embeds:[msg]})
     }
 }

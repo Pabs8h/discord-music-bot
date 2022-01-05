@@ -67,6 +67,12 @@ client.on('messageCreate', message => {
     if(comm === 'help'){
         client.commands.get('help').execute(message);
     }
+    if(comm === 'clear'){
+        client.commands.get('clear').execute(message, client.queues)
+    }
+    if(comm === 'back'){
+        client.commands.get('back').execute(message, client.queues)
+    }
 })
 
 client.login(process.env.CLIENT_LOGIN);

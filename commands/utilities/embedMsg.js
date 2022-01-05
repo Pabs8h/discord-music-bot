@@ -2,8 +2,7 @@ const { MessageEmbed } = require("discord.js")
 
 
 module.exports={
-    createEmbed(title, image, description, songInfo, extraFields){
-
+    createEmbed(title, image, description, songInfo, url, extraFields){
         let songFields = []
         if(songInfo){
             songFields.push({
@@ -25,12 +24,13 @@ module.exports={
 
         let msg = new MessageEmbed({
             title: title,
+            url: url,
             description: description,
             thumbnail:{
                 url: image?image:''
             },
             fields: songFields,
-            color: "PURPLE",
+            color: "PURPLE"
         });
 
         return msg;

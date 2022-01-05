@@ -1,4 +1,4 @@
-const { createEmbed } = require("./embedMsg");
+const { createEmbed } = require("./utilities/embedMsg");
 
 module.exports = {
     name: 'queue',
