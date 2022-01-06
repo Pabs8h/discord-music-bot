@@ -4,6 +4,7 @@ const { default: axios } = require('axios');
 const Discord = require('discord.js');
 const fs = require('fs');
 const { URLSearchParams } = require('url');
+const { SpotifyManager } = require('./commands/utilities/spotifyAPI');
 const prefix = '-'
 
 const client = new Discord.Client({intents: [Discord.Intents.FLAGS.GUILDS, Discord.Intents.FLAGS.GUILD_MESSAGES, Discord.Intents.FLAGS.GUILD_VOICE_STATES]});
@@ -18,17 +19,20 @@ commandFiles.forEach(file => {
     client.commands.set(command.name, command);
 });
 
-let spotifyParams = process.env.SPOTIFY_CLIENT_ID + ":" + process.env.SPOTIFY_SECRET;
+// let spotifyParams = process.env.SPOTIFY_CLIENT_ID + ":" + process.env.SPOTIFY_SECRET;
 
-let buff = Buffer.from(spotifyParams, "utf-8");
-let authHeader = "Basic " + buff.toString("base64");
+// let buff = Buffer.from(spotifyParams, "utf-8");
+// let authHeader = "Basic " + buff.toString("base64");
 
-const paramData = new URLSearchParams();
-paramData.append('grant_type', 'client_credentials');
-axios.post('https://accounts.spotify.com/api/token', paramData ,{headers:{"Authorization": authHeader, "Content-Type" : "application/x-www-form-urlencoded"}})
-.then((resp)=>{
-    client.spotifyToken = resp.data.access_token;
-})
+// const paramData = new URLSearchParams();
+// paramData.append('grant_type', 'client_credentials');
+// axios.post('https://accounts.spotify.com/api/token', paramData ,{headers:{"Authorization": authHeader, "Content-Type" : "application/x-www-form-urlencoded"}})
+// .then((resp)=>{
+//     client.spotifyToken = resp.data.access_token;
+// })
+
+client.spotifyHandler = new SpotifyManager();
+client.spotifyHandler.getToken();
 
 
 client.once('ready', ()=>{
@@ -44,7 +48,7 @@ client.on('messageCreate', message => {
     const next = args[args.length - 1] === '-n';
 
     if(comm === 'play' || comm === 'p'){
-        client.commands.get('play').execute(message, args, client.queues, client.spotifyToken, next);
+        client.commands.get('play').execute(message, args, client.queues, client.spotifyHandler, next);
     }
     if(comm === 'pause'){
         client.commands.get('pause').execute(message, args, client.queues);

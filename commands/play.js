@@ -8,7 +8,7 @@ const { createEmbed } = require('./utilities/embedMsg');
 module.exports = {
     name: 'play',
     description: 'joins channel to play music, adds a song to the end of the queue or after the current song \n command: -p or -play followed by url or song name',
-    async execute(message, args, queues, spoToken, next) {
+    async execute(message, args, queues, spotifyHandler, next) {
 
         const voiceChan = message.member.voice.channel;
         
@@ -105,24 +105,27 @@ module.exports = {
             spotUrl = playlist?`https://api.spotify.com/v1/playlists/${id}/tracks`:`https://api.spotify.com/v1/albums/${id}/tracks`; 
             
             try{
-            let resp = await axios.get(spotUrl, {headers: {"Authorization": `Bearer ${spoToken}`}})
-            let json = resp.data;
-            let songs = json.items;
-            let play = false;
-            songs.forEach(async element => {
-                    let info = "";
-                    if(playlist)
-                        info = element.track.name + " " + element.track.artists[0].name;
-                    else
-                        info = element.name + " " + element.artists[0].name
-                    let video = await videoFinder(info);
-                    addToQueue(video);
-                    if(!play){
-                        play = true;
-                        playQueue({song: video});
-                    }
-                });
-            }
+                let resp = await spotifyHandler.handleRequest(spotUrl);
+                if(resp.error){
+                    return message.channel.send({embeds: [createEmbed("Error",null, resp.error)]})
+                }
+                let json = resp.data;
+                let songs = json.items;
+                let play = false;
+                songs.forEach(async element => {
+                        let info = "";
+                        if(playlist)
+                            info = element.track.name + " " + element.track.artists[0].name;
+                        else
+                            info = element.name + " " + element.artists[0].name
+                        let video = await videoFinder(info);
+                        addToQueue(video);
+                        if(!play){
+                            play = true;
+                            playQueue({song: video});
+                        }
+                    });
+                }
             catch(e){
                 console.log(e)
                 message.channel.send("An error has ocurred, please check the url");
@@ -131,7 +134,10 @@ module.exports = {
 
         const spotifySong = async (id) => {
             let urlSong = `https://api.spotify.com/v1/tracks/${id}`
-            let response = await axios.get(urlSong, {headers: {"Authorization": `Bearer ${spoToken}`}})
+            let response = await spotifyHandler.handleRequest(urlSong);
+            if(response.error){
+                return message.channel.send({embeds: [createEmbed("Error",null, response.error)]})
+            }
             let query = response.data.name + " " + response.data.artists[0].name;
             let video = await videoFinder(query);
 
