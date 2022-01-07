@@ -3,7 +3,7 @@ const { playResource } = require("./utilities/music");
 
 module.exports = {
     name: "back",
-    description: "goes back to the previous song",
+    description: "goes back to the previous song \n Command: -back or -b",
     execute(message, queues){
 
         const voiceChan = message.member.voice.channel;

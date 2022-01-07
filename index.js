@@ -19,18 +19,6 @@ commandFiles.forEach(file => {
     client.commands.set(command.name, command);
 });
 
-// let spotifyParams = process.env.SPOTIFY_CLIENT_ID + ":" + process.env.SPOTIFY_SECRET;
-
-// let buff = Buffer.from(spotifyParams, "utf-8");
-// let authHeader = "Basic " + buff.toString("base64");
-
-// const paramData = new URLSearchParams();
-// paramData.append('grant_type', 'client_credentials');
-// axios.post('https://accounts.spotify.com/api/token', paramData ,{headers:{"Authorization": authHeader, "Content-Type" : "application/x-www-form-urlencoded"}})
-// .then((resp)=>{
-//     client.spotifyToken = resp.data.access_token;
-// })
-
 client.spotifyHandler = new SpotifyManager();
 client.spotifyHandler.getToken();
 
@@ -69,13 +57,16 @@ client.on('messageCreate', message => {
         client.commands.get('remove').execute(message, args, client.queues);
     }
     if(comm === 'help'){
-        client.commands.get('help').execute(message);
+        client.commands.get('help').execute(message, client.commands);
     }
     if(comm === 'clear'){
         client.commands.get('clear').execute(message, client.queues)
     }
-    if(comm === 'back'){
+    if(comm === 'back' || comm === 'b'){
         client.commands.get('back').execute(message, client.queues)
+    }
+    if(comm === 'ly' || comm === 'lyrics'){
+        client.commands.get('lyrics').execute(message, client.queues)
     }
 })
 

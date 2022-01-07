@@ -2,10 +2,10 @@ const { getVoiceConnection } = require('@discordjs/voice');
 
 module.exports = {
     name: 'reset',
-    descrption: 'leaves voice channel \n command: -reset',
+    description: 'leaves voice channel \n command: -reset',
     async execute(message, args, queues){
         const voiceChan = message.member.voice.channel;
-        if(!voiceChan) return message.channel.send('You can not execute this command outside the voice channel');
+        if(!voiceChan) return message.channel.send('You need to be in a voice channel to execute this command');
         const serverId = voiceChan.guildId;
 
         const connection = getVoiceConnection(voiceChan.guild.id);

@@ -119,6 +119,7 @@ module.exports = {
                         else
                             info = element.name + " " + element.artists[0].name
                         let video = await videoFinder(info);
+                        video.title = info;
                         addToQueue(video);
                         if(!play){
                             play = true;
@@ -140,6 +141,7 @@ module.exports = {
             }
             let query = response.data.name + " " + response.data.artists[0].name;
             let video = await videoFinder(query);
+            video.title = query;
 
             let success = addToQueue(video); 
             if(!success)
@@ -194,7 +196,7 @@ module.exports = {
             if(args[0].startsWith("https://open.spotify.com/"))
                 spotifyUrl(args[0]);
             else{
-                let info = await ytdl.getInfo(args[0]);
+                let info = await ytdl.getBasicInfo(args[0]);
                 let len = parseInt(info.videoDetails.lengthSeconds);
                 let timeString = "";
                 let leadingC = "";
@@ -209,13 +211,25 @@ module.exports = {
                 timeString += (min < 10?leadingC+min:min) + ":";
                 let seconds = (len-(min*60)-(3600*hours));
                 timeString += seconds >= 10?seconds.toString():"0"+ seconds.toString();
-                video = {title: info.videoDetails.title, url: args[0], thumbnail: info.videoDetails.thumbnails[0].url, timestamp: timeString}
+
+                let videoDetails = info.videoDetails;
+                let videoTitle = videoDetails.title;
+                if(videoDetails.media.song){
+                    videoTitle = videoDetails.media.song + " " + (videoDetails.media.artist?videoDetails.media.artist:"");
+                }
+
+                video = {title: videoTitle, url: args[0], thumbnail: info.videoDetails.thumbnails[0].url, timestamp: timeString}
                 addToQueue(video);
                 playQueue({song:video});
             }
         else{
             video = await videoFinder(args.join(' '));
             if(video){
+                let info = await ytdl.getBasicInfo(video.url);
+                let videoDetails = info.videoDetails;
+                if(videoDetails.media.song){
+                    video.title = videoDetails.media.song + " " + (videoDetails.media.artist?videoDetails.media.artist:"");
+                }
                 addToQueue(video);
                 playQueue({song: video});
             }
