@@ -26,12 +26,8 @@ module.exports = {
         let isIdle = false;
         let player;
         let firstComm = false;
-
-        const connection = joinVoiceChannel({
-            channelId: voiceChan.id,
-            guildId: voiceChan.guild.id,
-            adapterCreator: voiceChan.guild.voiceAdapterCreator,
-        });
+        let connection;
+        let timeout;
 
         if(serverQueue){
             if(serverQueue.player.state.status === AudioPlayerStatus.Playing)
@@ -39,10 +35,19 @@ module.exports = {
             else if((serverQueue.position >= serverQueue.queue.length) || serverQueue.queue.length === 0)
                 isIdle = true;
             player = serverQueue.player;
+
+            timeout = serverQueue.timeout?serverQueue.timeout:undefined;
         }
         else{
+            connection = joinVoiceChannel({
+                channelId: voiceChan.id,
+                guildId: voiceChan.guild.id,
+                adapterCreator: voiceChan.guild.voiceAdapterCreator,
+            });
             player = createAudioPlayer();
             queues.set(serverId, {
+                connection: connection,
+                voiceChannel: voiceChan.id,
                 player: player,
                 position: 0,
                 queue: [],
@@ -63,6 +68,8 @@ module.exports = {
         }
 
         const playSong = (song) => {
+            if(timeout)
+                clearTimeout(timeout);
             const stream = ytdl(song.url, {filter: 'audioonly', highWaterMark: 1 << 25});
             let resourceToPlay = createAudioResource(stream, {inlineVolume: true});
             resourceToPlay.volume.setVolume(0.2);
@@ -112,21 +119,22 @@ module.exports = {
                 let json = resp.data;
                 let songs = json.items;
                 let play = false;
-                songs.forEach(async element => {
-                        let info = "";
-                        if(playlist)
-                            info = element.track.name + " " + element.track.artists[0].name;
-                        else
-                            info = element.name + " " + element.artists[0].name
-                        let video = await videoFinder(info);
-                        video.title = info;
-                        addToQueue(video);
-                        if(!play){
-                            play = true;
-                            playQueue({song: video});
-                        }
-                    });
+                for (const element of songs) {                    
+                    let info = "";
+                    if(playlist)
+                        info = element.track.name + " " + element.track.artists[0].name;
+                    else
+                        info = element.name + " " + element.artists[0].name
+                    let video = await videoFinder(info);
+                    video.title = info;
+                    addToQueue(video);
+                    if(!play){
+                        play = true;
+                        playQueue({song: video});
+                    }
                 }
+                
+            }
             catch(e){
                 console.log(e)
                 message.channel.send("An error has ocurred, please check the url");
@@ -248,8 +256,15 @@ module.exports = {
                         console.log(e);
                     }
                 }
-                else
+                else{
                     message.channel.send("`No more songs left on the Queue`");
+                    timeout = setTimeout(()=>{
+                        connection.destroy();
+                        queues.delete(serverId);
+                    }, 300000)
+
+                    serverQueue.timeout = timeout;
+                }
             });
         }
 

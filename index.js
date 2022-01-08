@@ -68,6 +68,9 @@ client.on('messageCreate', message => {
     if(comm === 'ly' || comm === 'lyrics'){
         client.commands.get('lyrics').execute(message, client.queues)
     }
+    if(comm === 'j' || comm === 'jump'){
+        client.commands.get('jump').execute(message, args, client.queues)
+    }
 })
 
 client.login(process.env.CLIENT_LOGIN);

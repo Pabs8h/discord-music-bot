@@ -9,7 +9,6 @@ module.exports={
         const serverId = voiceChan.guildId;
         
         let queue = queues.get(serverId);
-        console.log(AudioPlayerStatus.Playing);
         if(queue.player.state.status !== AudioPlayerStatus.Playing)
             return message.channel.send('There is no song playing at the moment');
 

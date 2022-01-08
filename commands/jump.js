@@ -1,8 +1,8 @@
-const { createEmbed } = require("./utilities/embedMsg");
+const { playResource } = require("./utilities/music");
 
 module.exports = {
-    name: 'remove',
-    description: 'removes a song from the queue given a position in the queue. \n command: -remove or -r followed by the position of a song, example: -r 2 removes the second song in the queue.',
+    name: "jump",
+    description: "jump to a position on the queue \n Command: -j or -jump <Position in the queue>",
     execute(message, args, queues){
         const voiceChan = message.member.voice.channel;
         if(!voiceChan) return message.channel.send('You can not execute this command outside the voice channel');
@@ -17,21 +17,21 @@ module.exports = {
         if(isNaN(args[0]))
             return message.channel.send('please send a valid queue position');
 
-        let remPosition = args[0]
+        let jumpPosition = args[0]
 
-        if(remPosition < 0 || remPosition > queue.queue.length-1)
+        if(jumpPosition < 0 || jumpPosition > queue.queue.length-1)
             return message.channel.send('please send a valid queue position');
         
-        if(remPosition == queue.position)
+        if(jumpPosition == queue.position)
             return message.channel.send('the position cannot be the current song');
         
-        let songName = queue.queue[remPosition].name;
-
-        queue.queue.splice(remPosition, 1);
-        if(remPosition < queue.position)
-            queue.position -= 1;
-
-        let msg =  createEmbed("", "", songName + " has been removed from the queue", null)
-        return message.channel.send({embeds: [msg]});
+        try{
+            queue.position = parseInt(jumpPosition);
+            playResource(queue, message)
+        }
+        catch(error){
+            let msg =  createEmbed("Error", "", "An error has ocurred")
+            return message.channel.send({embeds: [msg]});
+        }
     }
 }

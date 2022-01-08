@@ -11,7 +11,6 @@ module.exports = {
         const serverId = voiceChan.guildId;
         
         let queue = queues.get(serverId);
-
         if(!queue) return message.channel.send('there is no queue for this server');
         if(queue.queue.length === 0) return message.channel.send({embeds:[createEmbed(null, null, 'The queue is empty', null)]});
 
