@@ -7,10 +7,10 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js"
   },
-  "author": "Pablo Garzon",
+  "author": "Pablo Garzon - gapablo2001@gmail.com",
   "license": "ISC",
   "dependencies": {
-    "@discordjs/opus": "^0.6.0",
+    "@discordjs/opus": "^0.7.0",
     "@discordjs/voice": "^0.6.0",
     "abort-controller": "^3.0.0",
     "axios": "^0.22.0",
@@ -19,7 +19,6 @@
     "dotenv": "^10.0.0",
     "ffmpeg-static": "^4.4.0",
     "libsodium-wrappers": "^0.7.9",
-    "opusscript": "0.0.8",
     "yt-search": "^2.10.3",
     "ytdl-core": "^4.9.2"
   }

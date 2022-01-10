@@ -51,6 +51,7 @@ module.exports = {
                 player: player,
                 position: 0,
                 queue: [],
+                loop: false,
             });
             firstComm = true;
             connection.subscribe(player);
@@ -161,8 +162,14 @@ module.exports = {
 
         const getNextSong = () => {
             serverQueue.position += 1;
-            if(serverQueue.position >= serverQueue.queue.length)
-                return null
+            if(serverQueue.position >= serverQueue.queue.length){
+                if(serverQueue.loop && serverQueue.queue.length > 0){
+                    serverQueue.position = 0;
+                    return serverQueue.queue[serverQueue.position]
+                }
+                else
+                    return null
+            }
             return serverQueue.queue[serverQueue.position];
         }
 
@@ -172,7 +179,11 @@ module.exports = {
         }
 
         const addToQueue = (video) => {
-            let nextPosition = next?serverQueue.position + 1:serverQueue.queue.length;
+            let nextPosition;
+            if(next && serverQueue.queue.length >= 1 && serverQueue.position+1 <= serverQueue.queue.length)
+                nextPosition = serverQueue.position + 1;
+            else
+                nextPosition = serverQueue.queue.length;
             if(video){
                 if(next){
                     serverQueue.queue.splice(nextPosition, 0, {
@@ -247,6 +258,11 @@ module.exports = {
 
         if(firstComm){
             player.on(AudioPlayerStatus.Idle, () => {
+                if(voiceChan.members.size === 1){
+                    connection.destroy();
+                    queues.delete(serverId);
+                    return message.channel.send("I left the voice channel because it was empty");;
+                }
                 let nextSong = getNextSong();
                 if(nextSong !== null){
                     try{
@@ -257,7 +273,6 @@ module.exports = {
                     }
                 }
                 else{
-                    message.channel.send("`No more songs left on the Queue`");
                     timeout = setTimeout(()=>{
                         connection.destroy();
                         queues.delete(serverId);

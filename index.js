@@ -3,7 +3,6 @@ global.AbortController = require("abort-controller");
 const { default: axios } = require('axios');
 const Discord = require('discord.js');
 const fs = require('fs');
-const { URLSearchParams } = require('url');
 const { SpotifyManager } = require('./commands/utilities/spotifyAPI');
 const prefix = '-'
 
@@ -70,6 +69,9 @@ client.on('messageCreate', message => {
     }
     if(comm === 'j' || comm === 'jump'){
         client.commands.get('jump').execute(message, args, client.queues)
+    }
+    if(comm === 'loop'){
+        client.commands.get('loop').execute(message, client.queues)
     }
 })
 

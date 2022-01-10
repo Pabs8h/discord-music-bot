@@ -10,6 +10,8 @@ module.exports={
         
         let queue = queues.get(serverId);
 
+        if(!queue) return message.channel.send('there is no song to unpause');
+
         let successful = queue.player.unpause();
 
         if(!successful){
