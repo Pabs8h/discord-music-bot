@@ -1,4 +1,5 @@
 const { AudioPlayerStatus } = require("@discordjs/voice");
+const { Message, Collection } = require("discord.js");
 const ytdl = require("ytdl-core");
 const { createEmbed } = require("./utilities/embedMsg");
 const { getLyrics } = require("./utilities/lyricsScraping");
@@ -6,6 +7,12 @@ const { getLyrics } = require("./utilities/lyricsScraping");
 module.exports={
     name: 'lyrics',
     description: 'Search for the lyrics of the song thats currently playing \n -ly or -lyrics',
+    /**
+     * Searches for the lyrics of the song thats currently playing on Genius.
+     * @param {Message} message 
+     * @param {Collection} queues 
+     * @returns reply message
+     */
     async execute(message, queues){
         const voiceChan = message.member.voice.channel;
         if(!voiceChan) return message.channel.send('You need to be in a voice channel to execute this command');
@@ -23,6 +30,11 @@ module.exports={
 
         let songName = song.name;
         
+        /**
+         * gets lyrics by the song name, if it cant find any, it tries to get music info from the youtube video
+         * and then tries to get the lyrics again.
+         */
+
         let lyrics = await getLyrics(songName);
         if(lyrics.error){
             let info = await ytdl.getBasicInfo(song.resource.url);

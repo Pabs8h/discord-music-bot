@@ -6,6 +6,9 @@ module.exports={
     execute(message, commands){
         let comms = {}
 
+        /**
+         * checks the description of all commands and sends a message with each one.
+         */
         commands.forEach((value, key) => {
             comms[key] = value.description;
         });

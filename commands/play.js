@@ -3,11 +3,22 @@ const ytSearch = require('yt-search');
 const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus } = require('@discordjs/voice');
 const axios = require('axios').default;
 const { createEmbed } = require('./utilities/embedMsg');
+const { Message, Collection } = require('discord.js');
+const { SpotifyManager } = require('./utilities/spotifyAPI');
 
 
 module.exports = {
     name: 'play',
     description: 'joins channel to play music, adds a song to the end of the queue or after the current song \n command: -p or -play followed by url or song name',
+    /**
+     * plays a song or only adds it to the queue.
+     * @param {Message} message 
+     * @param {Array} args 
+     * @param {Collection} queues 
+     * @param {SpotifyManager} spotifyHandler 
+     * @param {boolean} next 
+     * @returns message
+     */
     async execute(message, args, queues, spotifyHandler, next) {
 
         const voiceChan = message.member.voice.channel;
@@ -29,6 +40,12 @@ module.exports = {
         let connection;
         let timeout;
 
+        /**
+         * check if a queue for the server exists.
+         * if it does then check if it is playing, to determine if it should just add to queue or also play it. also sets some local variables like player and timeout.
+         * if there is no queue then join the voice channel of the user, create an audio player, create server object to store in queues collection and subscribe
+         * connection to player.
+         */
         if(serverQueue){
             if(serverQueue.player.state.status === AudioPlayerStatus.Playing)
                 isIdle = false;
@@ -59,6 +76,11 @@ module.exports = {
             isIdle = true;
         }
 
+        /**
+         * checks if a url is valid.
+         * @param {String} str url
+         * @returns true if valid, false if not.
+         */
         const validURL = (str) =>{
             var regex = /(http|https):\/\/(\w+:{0,1}\w*)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%!\-\/]))?/;
             if(!regex.test(str)){
@@ -68,6 +90,11 @@ module.exports = {
             }
         }
 
+        /**
+         * plays a song and resets disconnection timeout if necessary.
+         * @param {Object} song 
+         * @returns message of song playing.
+         */
         const playSong = (song) => {
             if(timeout)
                 clearTimeout(timeout);
@@ -79,6 +106,10 @@ module.exports = {
             return message.channel.send({embeds: [msg]});
         }
 
+        /**
+         * plays the queue if there is nothing playing.
+         * @param {Object} audioObj 
+         */
         const playQueue = (audioObj) => {
             if(isIdle){
                 let song;
@@ -91,6 +122,10 @@ module.exports = {
             }
         }
 
+        /**
+         * depending on the type of spotify url entered by the user, it executes the correct method to process it.
+         * @param {String} str url entered by user.
+         */
         const spotifyUrl = (str) => {
             let strParts = str.split("/");
             let id = strParts[strParts.length-1].split("?")[0];
@@ -108,6 +143,12 @@ module.exports = {
                 message.channel.send("`Please provide a valid spotify link`")
         }
 
+        /**
+         * processes all songs from a spotify playlist or album.
+         * @param {String} id album or playlist id 
+         * @param {boolean} playlist determines if the url should be for albums or playlysts.
+         * @returns message
+         */
         const spotifyPlaylistAlbum = async (id, playlist) => {
             let spotUrl = "";
             spotUrl = playlist?`https://api.spotify.com/v1/playlists/${id}/tracks`:`https://api.spotify.com/v1/albums/${id}/tracks`; 
@@ -142,6 +183,11 @@ module.exports = {
             };
         }
 
+        /**
+         * processes a song from spotify.
+         * @param {String} id song id 
+         * @returns message
+         */
         const spotifySong = async (id) => {
             let urlSong = `https://api.spotify.com/v1/tracks/${id}`
             let response = await spotifyHandler.handleRequest(urlSong);
@@ -160,6 +206,10 @@ module.exports = {
             }
         }
 
+        /**
+         * gets the next song in the queue.
+         * @returns null or a song(resource to play).
+         */
         const getNextSong = () => {
             serverQueue.position += 1;
             if(serverQueue.position >= serverQueue.queue.length){
@@ -173,11 +223,21 @@ module.exports = {
             return serverQueue.queue[serverQueue.position];
         }
 
+        /**
+         * searches on youtube.
+         * @param {String} query 
+         * @returns info from the video that resulted from the search.
+         */
         const videoFinder = async (query) => {
             const videoResult = await ytSearch(query);
             return (videoResult.videos.length > 1) ? videoResult.videos[0]:null;
         }
 
+        /**
+         * adds a new song to the queue.
+         * @param {Object} video 
+         * @returns message
+         */
         const addToQueue = (video) => {
             let nextPosition;
             if(next && serverQueue.queue.length >= 1 && serverQueue.position+1 <= serverQueue.queue.length)
@@ -210,6 +270,12 @@ module.exports = {
 
 
         let video;
+
+        /**
+         * checks if the argument is a url or words.
+         * if its a url it processes spotify and youtube separately.
+         * if its a normal query of words, it searches youtube, adds to queue and plays the song if there is nothing playing.
+         */
 
         if(validURL(args[0]))
             if(args[0].startsWith("https://open.spotify.com/"))
@@ -256,6 +322,12 @@ module.exports = {
                 message.channel.send("`No results found`");
         }
 
+        /**
+         * Event listener created only the first time.
+         * responsible for playing the next song on the queue when the current one ends.
+         * timeout if there are no songs left.
+         * disconnects from voice channel if there are no people connected.
+         */
         if(firstComm){
             player.on(AudioPlayerStatus.Idle, () => {
                 if(voiceChan.members.size === 1){

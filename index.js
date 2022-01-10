@@ -38,19 +38,19 @@ client.on('messageCreate', message => {
         client.commands.get('play').execute(message, args, client.queues, client.spotifyHandler, next);
     }
     if(comm === 'pause'){
-        client.commands.get('pause').execute(message, args, client.queues);
+        client.commands.get('pause').execute(message, client.queues);
     }
     if(comm === 'unpause'){
-        client.commands.get('unpause').execute(message, args, client.queues);
+        client.commands.get('unpause').execute(message, client.queues);
     }
     if(comm === 'reset'){
-        client.commands.get('reset').execute(message, args, client.queues);
+        client.commands.get('reset').execute(message, client.queues);
     }
     if(comm === 'n' || comm === 'next'){
         client.commands.get('next').execute(message, client.queues);
     }
     if(comm === 'queue' || comm === 'q'){
-        client.commands.get('queue').execute(message, args, client.queues);
+        client.commands.get('queue').execute(message, client.queues);
     }
     if(comm === 'remove' || comm === 'r'){
         client.commands.get('remove').execute(message, args, client.queues);

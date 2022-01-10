@@ -4,6 +4,10 @@ module.exports = {
     name: "jump",
     description: "jump to a position on the queue \n Command: -j or -jump <Position in the queue>",
     execute(message, args, queues){
+
+        /**
+         * check conditions to process command, must be in voice channel and position argument must be vaild.
+         */
         const voiceChan = message.member.voice.channel;
         if(!voiceChan) return message.channel.send('You can not execute this command outside the voice channel');
         const serverId = voiceChan.guildId;
@@ -25,6 +29,9 @@ module.exports = {
         if(jumpPosition == queue.position)
             return message.channel.send('the position cannot be the current song');
         
+        /**
+         * parses position entered by user and plays the song in said position.
+         */
         try{
             queue.position = parseInt(jumpPosition);
             playResource(queue, message)

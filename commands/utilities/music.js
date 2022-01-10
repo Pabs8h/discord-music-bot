@@ -1,8 +1,15 @@
 const { createAudioResource } = require("@discordjs/voice");
+const { Collection, Message } = require("discord.js");
 const ytdl = require("ytdl-core");
 const { createEmbed } = require("./embedMsg");
 
 module.exports = {
+    /**
+     * plays a song.
+     * @param {Collection} queue 
+     * @param {Message} message 
+     * @returns Promise of sent message of song playing.
+     */
     playResource(queue, message){
     let audioPlayer = queue.player;
     let song = queue.queue[queue.position];

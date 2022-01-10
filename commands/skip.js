@@ -1,11 +1,22 @@
 const { createAudioResource } = require("@discordjs/voice");
+const { Message, Collection } = require("discord.js");
 const ytdl = require('ytdl-core');
 const { createEmbed } = require("./utilities/embedMsg");
 
 module.exports = {
     name: 'next',
     description: 'skips to the next song \n command: -n or -next',
+    /**
+     * skips to the next song.
+     * @param {Message} message 
+     * @param {Collection} queues 
+     * @returns message of song that plays next or nothing.
+     */
     execute(message, queues){
+
+        /**
+         * check conditions to process the command.
+         */
         const voiceChan = message.member.voice.channel;
         if(!voiceChan) return message.channel.send('`You can not execute this command outside the voice channel`');
         const serverId = voiceChan.guildId;
@@ -17,6 +28,11 @@ module.exports = {
             return message.channel.send({embeds:[createEmbed(null, null, 'The queue is empty', null)]});
         }
 
+        /**
+         * Plays a song.
+         * @param {Object} queue 
+         * @returns message with song playing.
+         */
         const playResource = (queue) =>{
             try{
                 let audioPlayer = queue.player;
@@ -34,6 +50,9 @@ module.exports = {
             }
         }
 
+        /**
+         * depending on the length, current position and loop property, a song is picked or the player is stopped.
+         */
         if(queue.position + 1 > queue.queue.length || (queue.position + 1 === queue.queue.length && queue.loop)){
             queue.position = 0;
             playResource(queue);

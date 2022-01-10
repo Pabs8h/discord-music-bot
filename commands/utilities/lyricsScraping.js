@@ -2,6 +2,11 @@ const { default: axios } = require("axios");
 const { URLSearchParams } = require('url');
 const cheerio = require('cheerio');
 
+/**
+ * gets url from the first search result of the genius search api.
+ * @param {Object} search
+ * @returns the url of the first search result
+ */
 const getFirstResult = (search) => {
     let first = search.response.hits[0];
     if(first.type !== "song"){
@@ -17,6 +22,11 @@ const getFirstResult = (search) => {
     
 }
 
+/**
+ * searches for a song on the genius api, given the song name.
+ * @param {String} name 
+ * @returns search results from genius api
+ */
 const getSearchResults = async (name) => {
         let queryParam = name.trim();
         let paramData = new URLSearchParams();
@@ -26,6 +36,11 @@ const getSearchResults = async (name) => {
         return searchResults;
 }
 
+/**
+ * requests lyrics page and scrapes the lyrics off it.
+ * @param {String} url 
+ * @returns object with a song's lyrics
+ */
 const scrapeLyrics = async (url) => {
     let lyricsRequest = await axios.get(url);
     let lyricsHTML = lyricsRequest.data;
@@ -45,6 +60,13 @@ const scrapeLyrics = async (url) => {
     return {message: finalLyrics}
 }
 
+/**
+ * first gets search results from the getSearchResults function.
+ * then gets the url from the first result.
+ * finally gets the lyrics from the scrapeLyrics function.
+ * @param {String} song name
+ * @returns Object with a message being the song lyrics or an error message.
+ */
 const getLyrics = async (song) => {
     try{
         let search = await getSearchResults(song);
