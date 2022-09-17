@@ -5,6 +5,7 @@ const axios = require('axios').default;
 const { createEmbed } = require('./utilities/embedMsg');
 const { Message, Collection } = require('discord.js');
 const { SpotifyManager } = require('./utilities/spotifyAPI');
+const { PermissionsBitField } = require('discord.js');
 
 
 module.exports = {
@@ -26,8 +27,8 @@ module.exports = {
         if(!voiceChan) return message.channel.send('You need to be in a voice channel to execute this command');
         const permissions = voiceChan.permissionsFor(message.client.user);
 
-        if(!permissions.has('CONNECT')) return message.channel.send('You dont have the correct permissions');
-        if(!permissions.has('SPEAK')) return message.channel.send('You dont have the correct permissions');
+        if(!permissions.has([PermissionsBitField.Flags.Connect])) return message.channel.send('You dont have the correct permissions');
+        if(!permissions.has([PermissionsBitField.Flags.Speak])) return message.channel.send('You dont have the correct permissions');
 
         if(!args.length) return message.channel.send('You need to specify a song');
         
@@ -98,7 +99,7 @@ module.exports = {
         const playSong = (song) => {
             if(timeout)
                 clearTimeout(timeout);
-            const stream = ytdl(song.url, {filter: 'audioonly', highWaterMark: 1 << 25});
+            const stream = ytdl(song.url, {filter: 'audioonly', highWaterMark: 1 << 62, liveBuffer: 1 << 62, dlChunkSize: 0, bitrate: 128, quality:'lowestaudio'});
             let resourceToPlay = createAudioResource(stream, {inlineVolume: true});
             resourceToPlay.volume.setVolume(0.2);
             player.play(resourceToPlay);

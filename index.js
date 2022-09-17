@@ -1,12 +1,12 @@
 require('dotenv').config();
-global.AbortController = require("abort-controller");
+// global.AbortController = require("abort-controller");
 const { default: axios } = require('axios');
 const Discord = require('discord.js');
 const fs = require('fs');
 const { SpotifyManager } = require('./commands/utilities/spotifyAPI');
 const prefix = '-'
 
-const client = new Discord.Client({intents: [Discord.Intents.FLAGS.GUILDS, Discord.Intents.FLAGS.GUILD_MESSAGES, Discord.Intents.FLAGS.GUILD_VOICE_STATES]});
+const client = new Discord.Client({intents: [Discord.GatewayIntentBits.Guilds, Discord.GatewayIntentBits.GuildMessages, Discord.GatewayIntentBits.GuildVoiceStates, Discord.GatewayIntentBits.MessageContent]});
 
 client.commands = new Discord.Collection();
 client.queues = new Discord.Collection();

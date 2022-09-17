@@ -1,4 +1,4 @@
-const { MessageActionRow, MessageButton, Message, Collection, Interaction } = require("discord.js");
+const { ActionRowBuilder, ButtonBuilder, Message, Collection, Interaction } = require("discord.js");
 const { createEmbed } = require("./utilities/embedMsg");
 
 module.exports = {
@@ -64,15 +64,15 @@ module.exports = {
         /**
          * create action row of pagination buttons.
          */
-        const actionRow = new MessageActionRow().addComponents(
-            new MessageButton()
+        const actionRow = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
                 .setCustomId('prevPage')
                 .setEmoji('◀️')
-                .setStyle('SECONDARY'),
-            new MessageButton()
+                .setStyle('Secondary'),
+            new ButtonBuilder()
                 .setCustomId('nextPage')
                 .setEmoji('▶️')
-                .setStyle('SECONDARY'),
+                .setStyle('Primary'),
         )
 
         /**

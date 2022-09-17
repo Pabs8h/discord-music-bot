@@ -2,9 +2,6 @@
   "name": "poor-mans-groovy",
   "version": "1.0.0",
   "description": "",
-  "engines": {
-    "node": "14.19.3"
-  },
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -13,16 +10,16 @@
   "author": "Pablo Garzon - gapablo2001@gmail.com",
   "license": "ISC",
   "dependencies": {
-    "@discordjs/opus": "^0.7.0",
-    "@discordjs/voice": "^0.6.0",
+    "@discordjs/opus": "0.8.0",
+    "@discordjs/voice": "0.11.0",
     "abort-controller": "^3.0.0",
     "axios": "^0.22.0",
     "cheerio": "^1.0.0-rc.10",
-    "discord.js": "^13.1.0",
+    "discord.js": "14.3.0",
     "dotenv": "^10.0.0",
-    "ffmpeg-static": "^4.4.0",
-    "libsodium-wrappers": "^0.7.9",
+    "ffmpeg-static": "5.1.0",
+    "libsodium-wrappers": "^0.7.10",
     "yt-search": "^2.10.3",
-    "ytdl-core": "^4.9.2"
+    "ytdl-core": "4.11.2"
   }
 }

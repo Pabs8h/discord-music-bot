@@ -1,4 +1,4 @@
-const { MessageEmbed } = require("discord.js")
+const { EmbedBuilder } = require("discord.js")
 
 
 module.exports={
@@ -32,7 +32,7 @@ module.exports={
             }
         }
 
-        let msg = new MessageEmbed({
+        let msg = new EmbedBuilder({
             title: title,
             url: url,
             description: description,
@@ -40,7 +40,7 @@ module.exports={
                 url: image?image:''
             },
             fields: songFields,
-            color: "PURPLE"
+            color: "10181046"
         });
 
         return msg;
