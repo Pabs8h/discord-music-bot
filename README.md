@@ -1,6 +1,6 @@
 # discord music bot
 
-Discord music bot for one or multiple servers. Created using Node js, discord js, and some additional modules and API's.
+Discord music bot for one or multiple servers. Created using Node js, discord js 14, and some additional modules and API's.
 
 ## Features
 
@@ -26,7 +26,7 @@ The bot currently features 13 commands to control music in a voice channel. It h
 
 ### Node
 
-Node 14 must be installed. Discord js indicates Node 16 is required, but there is an issue with the ytdl-core module used in the project. The audio stream cuts out unexpectedly with an error if node 16 is used. To solve this issue the project uses Node 14 and the abort-controller module to solve the compatibility issue of not using Node 16. [Error: imput stream: aborted #902](https://github.com/fent/node-ytdl-core/issues/902#issue-831938147)
+Node 16 must be installed as this is a requirement for discord.js 14.
 
 ### Discord app setup
 
