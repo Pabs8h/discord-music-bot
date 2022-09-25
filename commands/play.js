@@ -1,6 +1,6 @@
 const ytdl = require('ytdl-core');
 const ytSearch = require('yt-search');
-const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus } = require('@discordjs/voice');
+const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus, getVoiceConnection } = require('@discordjs/voice');
 const axios = require('axios').default;
 const { createEmbed } = require('./utilities/embedMsg');
 const { Message, Collection } = require('discord.js');
@@ -332,9 +332,12 @@ module.exports = {
         if(firstComm){
             player.on(AudioPlayerStatus.Idle, () => {
                 if(voiceChan.members.size === 1){
-                    connection.destroy();
+                    const connectionServ = getVoiceConnection(voiceChan.guild.id);
+                    if(connectionServ){
+                        connectionServ.destroy();
+                        return message.channel.send("I left the voice channel because it was empty");;
+                    }
                     queues.delete(serverId);
-                    return message.channel.send("I left the voice channel because it was empty");;
                 }
                 let nextSong = getNextSong();
                 if(nextSong !== null){
@@ -347,10 +350,12 @@ module.exports = {
                 }
                 else{
                     timeout = setTimeout(()=>{
-                        connection.destroy();
-                        queues.delete(serverId);
+                        const connectionServ = getVoiceConnection(voiceChan.guild.id);
+                        if(connectionServ){
+                            connection.destroy();
+                            queues.delete(serverId);
+                        }
                     }, 300000)
-
                     serverQueue.timeout = timeout;
                 }
             });
